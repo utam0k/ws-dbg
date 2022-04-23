@@ -5,5 +5,5 @@ type Client interface {
 }
 
 func NewClient() (Client, error) {
-	return connectContainerd("/run/containerd/containerd.sock")
+	return connectContainerd("/var/run/docker/containerd/containerd.sock")
 }

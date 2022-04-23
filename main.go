@@ -9,8 +9,9 @@ import (
 
 func main() {
 	fmt.Println("Hello, World")
-	_, err := crt.NewClient()
+	cc, err := crt.NewClient()
 	if err != nil {
 		log.Fatalf("cannot connet to cllient: %v", err)
 	}
+	cc.FetchContainers()
 }
