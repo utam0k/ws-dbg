@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"path"
 	"strings"
 	"time"
 
 	"github.com/containerd/containerd"
+	"github.com/utam0k/wsdbg/pkg/cgroup"
 )
 
 const (
@@ -66,9 +68,17 @@ func (cc *ContainerdClient) FetchWsContainers() ([]Workspace, error) {
 		}
 
 		wsId := envs["GITPOD_WORKSPACE_ID"]
+		// TODO: get the cgroup root from the config of containerd.
+		cgroupFullPath := path.Join("/sys/fs/cgroup", spec.Linux.CgroupsPath)
+		cpuMax, err := cgroup.ReadCpuMax(cgroupFullPath)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
 		ws := Workspace{
 			Id:         wsId,
-			CgroupPath: spec.Linux.CgroupsPath,
+			CgroupPath: cgroupFullPath,
+			CpuMax: cpuMax,
 		}
 
 		if !isWorkspace(ws) {

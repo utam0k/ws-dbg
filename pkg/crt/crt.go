@@ -1,6 +1,10 @@
 package crt
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/utam0k/wsdbg/pkg/cgroup"
+)
 
 type Client interface {
 	FetchWsContainers() ([]Workspace, error)
@@ -14,8 +18,9 @@ func NewClient(addr, namespace string) (Client, error) {
 type Workspace struct {
 	Id         string
 	CgroupPath string
+	CpuMax     cgroup.CpuMax
 }
 
 func (w *Workspace) String() string {
-	return fmt.Sprintf("%s\t%s", w.Id, w.CgroupPath)
+	return fmt.Sprintf("%s\t%s\t%s", w.Id, w.CpuMax.String(), w.CgroupPath)
 }
