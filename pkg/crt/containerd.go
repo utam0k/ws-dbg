@@ -69,21 +69,21 @@ func (cc *ContainerdClient) FetchWsContainers() ([]Workspace, error) {
 
 		wsId := envs["GITPOD_WORKSPACE_ID"]
 		// TODO: get the cgroup root from the config of containerd.
-		cgroupFullPath := path.Join("/sys/fs/cgroup", spec.Linux.CgroupsPath)
-		cpuMax, err := cgroup.ReadCpuMax(cgroupFullPath)
-		if err != nil {
-			log.Fatalln(err)
-		}
-
 		ws := Workspace{
-			Id:         wsId,
-			CgroupPath: cgroupFullPath,
-			CpuMax: cpuMax,
+			Id: wsId,
 		}
 
 		if !isWorkspace(ws) {
 			continue
 		}
+
+		cgroupFullPath := path.Join("/sys/fs/cgroup", spec.Linux.CgroupsPath)
+		cpuMax, err := cgroup.ReadCpuMax(cgroupFullPath)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		ws.CgroupPath = cgroupFullPath
+		ws.CpuMax = cpuMax
 
 		wss = append(wss, ws)
 	}
