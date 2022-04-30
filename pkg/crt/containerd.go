@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"path"
 	"strings"
 	"time"
 
@@ -77,12 +76,11 @@ func (cc *ContainerdClient) FetchWsContainers() ([]Workspace, error) {
 			continue
 		}
 
-		cgroupFullPath := path.Join("/sys/fs/cgroup", spec.Linux.CgroupsPath)
-		cpuMax, err := cgroup.ReadCpuMax(cgroupFullPath)
+		cpuMax, err := cgroup.ReadCpuLimit(spec.Linux.CgroupsPath)
 		if err != nil {
 			log.Fatalln(err)
 		}
-		ws.CgroupPath = cgroupFullPath
+		ws.CgroupPath = spec.Linux.CgroupsPath
 		ws.CpuMax = cpuMax
 
 		wss = append(wss, ws)

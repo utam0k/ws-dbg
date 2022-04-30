@@ -18,7 +18,7 @@ func NewClient(addr, namespace string) (Client, error) {
 type Workspace struct {
 	Id         string
 	CgroupPath string
-	CpuMax     cgroup.CpuMax
+	CpuMax     cgroup.CpuLimit
 }
 
 func (w *Workspace) String() string {
