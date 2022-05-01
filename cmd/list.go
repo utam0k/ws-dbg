@@ -1,12 +1,30 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
+	"os"
 
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"github.com/utam0k/wsdbg/pkg/crt"
 )
+
+func setUpTable(header []string) *tablewriter.Table {
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader(header)
+	table.SetAutoWrapText(false)
+	table.SetAutoFormatHeaders(true)
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetCenterSeparator("")
+	table.SetColumnSeparator("")
+	table.SetRowSeparator("")
+	table.SetHeaderLine(false)
+	table.SetBorder(false)
+	table.SetTablePadding("\t") // pad with tabs
+	table.SetNoWhiteSpace(true)
+	return table
+}
 
 var listCmd = &cobra.Command{
 	Use:   "list",
@@ -35,9 +53,13 @@ var listCmd = &cobra.Command{
 			log.Fatalln(err)
 		}
 
+		header := []string{"ID", "CpuLimit", "CgroupPath"}
+		table := setUpTable(header)
+
 		for _, ws := range wss {
-			fmt.Println(ws.String())
+			table.Append([]string{ws.Id, ws.CpuMax.String(), ws.CgroupPath})
 		}
+		table.Render()
 	},
 }
 
