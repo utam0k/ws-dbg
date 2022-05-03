@@ -13,14 +13,6 @@ import (
 	"github.com/utam0k/wsdbg/pkg/cgroup"
 )
 
-const (
-	kubernetesNamespace            = "k8s.io"
-	dockerNamespce                 = "moby"
-	containerLabelCRIKind          = "io.cri-containerd.kind"
-	containerLabelK8sContainerName = "io.kubernetes.container.name"
-	containerLabelK8sPodName       = "io.kubernetes.pod.name"
-)
-
 func connectContainerd(addr string, ns string) (*ContainerdClient, error) {
 	cc, err := containerd.New(addr, containerd.WithDefaultNamespace(ns))
 	if err != nil {

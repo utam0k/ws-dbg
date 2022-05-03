@@ -54,7 +54,7 @@ var listCmd = &cobra.Command{
 			log.Fatalln(err)
 		}
 
-		header := []string{"ID", "CpuUsage", "CpuLimit", "CgroupPath"}
+		header := []string{"ID", "Cpu(%)", "CpuLimit", "Memory(%)", "CgroupPath"}
 		table := setUpTable(header)
 
 		for _, ws := range wss {
@@ -62,17 +62,26 @@ var listCmd = &cobra.Command{
 			if err != nil {
 				log.Fatalf("failed to get processes: %v", err)
 			}
-			var cpuUsage float64
+
+			var (
+				cpuUsage float64
+				memUsage float32
+			)
 			for _, ps := range pss {
-				us, err := ps.CPUPercent()
+				cu, err := ps.CPUPercent()
 				if err != nil {
 					// if a process cannot found, it means process have already existed.
 					continue
 				}
-				cpuUsage += us
+				cpuUsage += cu
+				mu, err := ps.MemoryPercent()
+				if err != nil {
+					continue
+				}
+				memUsage += mu
 			}
 
-			table.Append([]string{ws.Id, fmt.Sprintf("%.2f", cpuUsage), ws.CpuMax.String(), ws.CgroupPath})
+			table.Append([]string{ws.Id, fmt.Sprintf("%.2f", cpuUsage), ws.CpuMax.String(), fmt.Sprintf("%.2f", memUsage), ws.CgroupPath})
 		}
 		table.Render()
 	},
