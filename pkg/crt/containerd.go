@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/containerd/containerd"
+	"github.com/containerd/containerd/api/services/tasks/v1"
+	"github.com/shirou/gopsutil/process"
 	"github.com/utam0k/wsdbg/pkg/cgroup"
 )
 
@@ -67,9 +69,9 @@ func (cc *ContainerdClient) FetchWsContainers() ([]Workspace, error) {
 		}
 
 		wsId := envs["GITPOD_WORKSPACE_ID"]
-		// TODO: get the cgroup root from the config of containerd.
 		ws := Workspace{
-			Id: wsId,
+			Id:          wsId,
+			ContainerId: c.ID(),
 		}
 
 		if !isWorkspace(ws) {
@@ -91,6 +93,26 @@ func (cc *ContainerdClient) FetchWsContainers() ([]Workspace, error) {
 
 func isWorkspace(ws Workspace) bool {
 	return ws.Id != ""
+}
+
+func (cc *ContainerdClient) FetchProcessesInWs(ws Workspace) ([]*process.Process, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	res, err := cc.Client.TaskService().ListPids(ctx, &tasks.ListPidsRequest{ContainerID: ws.ContainerId})
+	if err != nil {
+		return nil, err
+	}
+
+	var processes []*process.Process
+	for _, p := range res.Processes {
+		ps, err := process.NewProcess(int32(p.Pid))
+		if err != nil {
+			// if a process cannot found, it means process have already existed.
+			continue
+		}
+		processes = append(processes, ps)
+	}
+	return processes, nil
 }
 
 func (cc *ContainerdClient) Close() {

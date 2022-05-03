@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 )
 
+// TODO: get the cgroup root from the config of containerd.
 const CgroupRoot = "/sys/fs/cgroup"
 
 type CgroupVersion int

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -53,11 +54,25 @@ var listCmd = &cobra.Command{
 			log.Fatalln(err)
 		}
 
-		header := []string{"ID", "CpuLimit", "CgroupPath"}
+		header := []string{"ID", "CpuUsage", "CpuLimit", "CgroupPath"}
 		table := setUpTable(header)
 
 		for _, ws := range wss {
-			table.Append([]string{ws.Id, ws.CpuMax.String(), ws.CgroupPath})
+			pss, err := cc.FetchProcessesInWs(ws)
+			if err != nil {
+				log.Fatalf("failed to get processes: %v", err)
+			}
+			var cpuUsage float64
+			for _, ps := range pss {
+				us, err := ps.CPUPercent()
+				if err != nil {
+					// if a process cannot found, it means process have already existed.
+					continue
+				}
+				cpuUsage += us
+			}
+
+			table.Append([]string{ws.Id, fmt.Sprintf("%.2f", cpuUsage), ws.CpuMax.String(), ws.CgroupPath})
 		}
 		table.Render()
 	},
