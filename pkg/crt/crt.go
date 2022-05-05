@@ -1,8 +1,6 @@
 package crt
 
 import (
-	"fmt"
-
 	"github.com/shirou/gopsutil/process"
 	"github.com/utam0k/wsdbg/pkg/cgroup"
 )
@@ -22,8 +20,5 @@ type Workspace struct {
 	ContainerId string
 	CgroupPath  string
 	CpuMax      cgroup.CpuLimit
-}
-
-func (w *Workspace) String() string {
-	return fmt.Sprintf("%s\t%s\t%s", w.Id, w.CpuMax.String(), w.CgroupPath)
+	MemoryStat  cgroup.MemoryStat
 }

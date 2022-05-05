@@ -74,8 +74,14 @@ func (cc *ContainerdClient) FetchWsContainers() ([]Workspace, error) {
 		if err != nil {
 			log.Fatalln(err)
 		}
+
+		memStat, err := cgroup.ReadMemoryStat(spec.Linux.CgroupsPath)
+		if err != nil {
+			log.Fatalln(err)
+		}
 		ws.CgroupPath = spec.Linux.CgroupsPath
 		ws.CpuMax = cpuMax
+		ws.MemoryStat = memStat
 
 		wss = append(wss, ws)
 	}

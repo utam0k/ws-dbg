@@ -54,7 +54,7 @@ var listCmd = &cobra.Command{
 			log.Fatalln(err)
 		}
 
-		header := []string{"ID", "Cpu(%)", "CpuLimit", "Memory(%)", "CgroupPath"}
+		header := []string{"ID", "Cpu(%)", "CpuLimit", "Memory(%)", "MemoryStat", "CgroupPath"}
 		table := setUpTable(header)
 
 		for _, ws := range wss {
@@ -81,7 +81,7 @@ var listCmd = &cobra.Command{
 				memUsage += mu
 			}
 
-			table.Append([]string{ws.Id, fmt.Sprintf("%.2f", cpuUsage), ws.CpuMax.String(), fmt.Sprintf("%.2f", memUsage), ws.CgroupPath})
+			table.Append([]string{ws.Id, fmt.Sprintf("%.2f", cpuUsage), ws.CpuMax.String(), fmt.Sprintf("%.2f", memUsage), ws.MemoryStat.String(), ws.CgroupPath})
 		}
 		table.Render()
 	},
