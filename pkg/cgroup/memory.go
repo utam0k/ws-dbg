@@ -28,6 +28,7 @@ func (m *MemoryStat) String() string {
 		limit = m.Limit.String()
 	}
 
+	m.Usage.RoundUp(resource.Mega)
 	usage = m.Usage.String()
 
 	return fmt.Sprintf("%s/%s", usage, limit)
@@ -51,8 +52,13 @@ func readMemoryStatV1(cgroupPath string) (MemoryStat, error) {
 	if err != nil {
 		return MemoryStat{}, err
 	}
+	usage, err := readMemoryUsage(cgroupPath)
+	if err != nil {
+		return MemoryStat{}, err
+	}
 	return MemoryStat{
 		Limit: limit,
+		Usage: usage,
 	}, nil
 }
 
@@ -66,5 +72,15 @@ func readMemoryLimit(cgroupPath string) (resource.Quantity, error) {
 	if s == "max" {
 		return resource.Quantity{}, nil
 	}
+	return resource.MustParse(s), nil
+}
+
+func readMemoryUsage(cgroupPath string) (resource.Quantity, error) {
+	fn := filepath.Join(cgroupPath, "memory.usage_in_bytes")
+	fc, err := os.ReadFile(fn)
+	if err != nil {
+		return resource.Quantity{}, err
+	}
+	s := strings.TrimSpace(string(fc))
 	return resource.MustParse(s), nil
 }
