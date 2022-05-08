@@ -5,9 +5,24 @@ import (
 	"log"
 	"os"
 
+	"github.com/shirou/gopsutil/process"
 	"github.com/spf13/cobra"
 	"github.com/utam0k/wsdbg/pkg/crt"
 )
+
+type WorkspaceInfo struct {
+	Workspace crt.Workspace
+	Processes []ProcessInfo
+}
+
+type ProcessInfo struct {
+	Pid            int32
+	PPid           int32
+	Name           string
+	CpuUsage       float64
+	MemoryUsage    float32
+	IoCountersStat *process.IOCountersStat
+}
 
 var inspectCmd = &cobra.Command{
 	Use:   "inspect",
@@ -47,9 +62,52 @@ var inspectCmd = &cobra.Command{
 			log.Fatalf("cannot find %s", targetId)
 		}
 
+		pss, err := cc.FetchProcessesInWs(ws)
+		if err != nil {
+			log.Fatalf("failed to get processes: %v", err)
+		}
+
+		var psInfo []ProcessInfo
+		for _, ps := range pss {
+			name, err := ps.Cmdline()
+			if err != nil {
+				continue
+			}
+			cpuUsage, err := ps.CPUPercent()
+			if err != nil {
+				continue
+			}
+			memUsage, err := ps.MemoryPercent()
+			if err != nil {
+				continue
+			}
+			ppid, err := ps.Parent()
+			if err != nil {
+				continue
+			}
+			ioCounters, err := ps.IOCounters()
+			if err != nil {
+				continue
+			}
+
+			pi := ProcessInfo{
+				Pid:            ps.Pid,
+				PPid:           ppid.Pid,
+				Name:           name,
+				CpuUsage:       cpuUsage,
+				MemoryUsage:    memUsage,
+				IoCountersStat: ioCounters,
+			}
+			psInfo = append(psInfo, pi)
+		}
+		wi := WorkspaceInfo{
+			Workspace: ws,
+			Processes: psInfo,
+		}
+
 		enc := json.NewEncoder(os.Stdout)
 		enc.SetIndent("", "    ")
-		err = enc.Encode(ws)
+		err = enc.Encode(wi)
 		if err != nil {
 			log.Fatalln(err)
 		}
