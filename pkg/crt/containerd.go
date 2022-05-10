@@ -82,6 +82,8 @@ func (cc *ContainerdClient) FetchWsContainers() ([]Workspace, error) {
 		ws.CgroupPath = spec.Linux.CgroupsPath
 		ws.CpuMax = cpuMax
 		ws.MemoryStat = memStat
+		cinfo, _ := c.Info(ctx)
+		ws.Uptime = time.Now().Sub(cinfo.CreatedAt)
 
 		wss = append(wss, ws)
 	}
